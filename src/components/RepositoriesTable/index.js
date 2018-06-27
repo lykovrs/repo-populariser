@@ -20,11 +20,11 @@ import {
 } from "../../ducks/repositories";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import SimpleSnackbarPortal from "../SimpleSnackbarPortal";
+import dayjs from "dayjs";
 
 const styles = theme => ({
   root: {
-    width: "100%",
-    marginTop: theme.spacing.unit * 3
+    width: "100%"
   },
   table: {
     minWidth: 1020
@@ -144,7 +144,11 @@ class RepositoriesTable extends Component {
    * Делаем запрос данных
    */
   componentDidMount() {
-    this.props.fetchRepositories(this.props.id);
+    const monthAgo = dayjs()
+      .add(-1, "month")
+      .format("YYYY-MM-DD");
+
+    this.props.fetchRepositories(monthAgo, 10);
   }
 
   /**

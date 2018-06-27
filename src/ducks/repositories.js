@@ -1,9 +1,11 @@
-import { all, takeEvery, put, call } from "redux-saga/effects";
+import { all, takeLatest, put, call } from "redux-saga/effects";
 import { appName } from "../config";
 import { Record, List } from "immutable";
 import { createSelector } from "reselect";
 import { client } from "../ApolloClient";
 import gql from "graphql-tag";
+import dayjs from "dayjs";
+
 /**
  * Constants
  * */
@@ -32,10 +34,16 @@ export const ItemRecord = Record({
   createdAt: null
 });
 
+export const QueryParamsRecord = Record({
+  amount: null,
+  fromDate: null
+});
+
 export const ReducerRecord = Record({
   items: new List([]),
   messages: new List([]),
-  loading: false
+  loading: false,
+  queryParams: new QueryParamsRecord()
 });
 
 export default function reducer(state = new ReducerRecord(), action) {
@@ -46,7 +54,10 @@ export default function reducer(state = new ReducerRecord(), action) {
       return new ReducerRecord();
 
     case FETCH_ITEMS_START:
-      return state.set("items", new List([])).set("loading", true);
+      return state
+        .set("items", new List([]))
+        .set("loading", true)
+        .set("queryParams", new QueryParamsRecord(payload));
 
     case FETCH_ITEMS_ERROR:
       return state.set("loading", false).updateIn(["messages"], fav => {
@@ -90,6 +101,10 @@ export const reportMessagesSelector = createSelector(stateSelector, state =>
   state.messages.toArray()
 );
 
+export const queryParamsSelector = createSelector(stateSelector, state =>
+  state.queryParams.toJS()
+);
+
 /**
  * Action Creators
  * */
@@ -99,12 +114,10 @@ export function clearRepositories() {
   };
 }
 
-export function fetchRepositories(id) {
+export function fetchRepositories(fromDate, amount) {
   return {
     type: FETCH_ITEMS_REQUEST,
-    payload: {
-      id
-    }
+    payload: { fromDate, amount }
   };
 }
 
@@ -125,8 +138,8 @@ function modifyData(arr) {
       description: node.description,
       stargazers: node.stargazers.totalCount,
       forks: node.forks.totalCount,
-      updatedAt: node.updatedAt,
-      createdAt: node.createdAt
+      updatedAt: `${dayjs(node.updatedAt).format("DD.MM.YYYY")}`,
+      createdAt: `${dayjs(node.createdAt).format("DD.MM.YYYY")}`
     });
   });
 }
@@ -134,14 +147,14 @@ function modifyData(arr) {
 /**
  * Делает запрос на сервер за данными отчета
  */
-export async function fetchGraphQLRepositories(last, from) {
+export async function fetchGraphQLRepositories(from, last) {
   const { data } = await client.query({
     query: gql`
       {
         search(
-          query: "language:JavaScript created:>2018-03-01"
+          query: "language:JavaScript created:>${from}"
           type: REPOSITORY
-          last: 10
+          last: ${last}
         ) {
           repositoryCount
           edges {
@@ -173,17 +186,15 @@ export async function fetchGraphQLRepositories(last, from) {
  * Sagas
  * */
 export function* fetchRepositoriesSaga(action) {
-  const { id } = action.payload;
+  const { amount, fromDate } = action.payload;
 
   yield put({
     type: FETCH_ITEMS_START,
-    payload: {
-      id
-    }
+    payload: { amount, fromDate }
   });
 
   try {
-    const data = yield call(fetchGraphQLRepositories, id);
+    const data = yield call(fetchGraphQLRepositories, fromDate, amount);
     yield put({
       type: FETCH_ITEMS_SUCCESS,
       payload: { items: data, message: "Отчет успешно сформирован" }
@@ -197,5 +208,5 @@ export function* fetchRepositoriesSaga(action) {
 }
 
 export function* saga() {
-  yield all([takeEvery(FETCH_ITEMS_REQUEST, fetchRepositoriesSaga)]);
+  yield all([takeLatest(FETCH_ITEMS_REQUEST, fetchRepositoriesSaga)]);
 }
