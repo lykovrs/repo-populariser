@@ -1,12 +1,12 @@
 import reducer, {
-  fetchReportSaga,
-  fetchAxiosReport,
+  fetchRepositoriesSaga,
+  fetchAxiosRepositories,
   FETCH_ITEMS_REQUEST,
   FETCH_ITEMS_START,
   FETCH_ITEMS_SUCCESS,
   FETCH_ITEMS_ERROR,
   ReducerRecord
-} from "./report";
+} from "./repositories";
 import { take, call, put, takeEvery } from "redux-saga/effects";
 
 /**
@@ -21,7 +21,7 @@ it("should fetch items", () => {
     }
   };
 
-  const saga = fetchReportSaga(requestAction);
+  const saga = fetchRepositoriesSaga(requestAction);
 
   expect(saga.next().value).toEqual(
     put({
@@ -33,7 +33,7 @@ it("should fetch items", () => {
   );
 
   expect(saga.next(FETCH_ITEMS_START).value).toEqual(
-    call(fetchAxiosReport, id)
+    call(fetchAxiosRepositories, id)
   );
 
   expect(saga.next(FETCH_ITEMS_SUCCESS).value).toEqual(

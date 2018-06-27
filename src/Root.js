@@ -6,6 +6,12 @@ import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import blue from "@material-ui/core/colors/blue";
 import red from "@material-ui/core/colors/red";
 
+// Используем для оптимизации разработки
+if (process.env.NODE_ENV !== "production") {
+  const { whyDidYouUpdate } = require("why-did-you-update");
+  whyDidYouUpdate(React);
+}
+
 export const theme = createMuiTheme({
   palette: {
     primary: blue,

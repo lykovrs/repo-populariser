@@ -1,6 +1,6 @@
 import React from "react";
 import { shallow, mount } from "enzyme";
-import ReportTable from "./index";
+import RepositoriesTable from "./index";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import Enzyme from "enzyme";
 import Adapter from "enzyme-adapter-react-16";
@@ -12,7 +12,7 @@ import { theme } from "../../Root";
 Enzyme.configure({ adapter: new Adapter() });
 
 it("should render loader", () => {
-  const container = shallow(<ReportTable store={store} />);
+  const container = shallow(<RepositoriesTable store={store} />);
   expect(container.contains(<LinearProgress />));
 });
 it("it should render report list", () => {
@@ -29,14 +29,14 @@ it("it should render report list", () => {
     });
   }
   const container = shallow(
-    <ReportTable
+    <RepositoriesTable
       items={testEvents}
-      fetchReport={() => {}}
+      fetchRepositories={() => {}}
       messages={[]}
       loading={false}
       classes={{}}
-      clearReport={() => {}}
-      clearReportMessage={() => {}}
+      clearRepositories={() => {}}
+      clearRepositoriesMessage={() => {}}
       exportTo={() => {}}
     />
   );
@@ -48,7 +48,7 @@ it("it should render report list", () => {
 //   const container = mount(
 //     <Provider store={store}>
 //       <MuiThemeProvider theme={theme}>
-//         <ReportTable />
+//         <RepositoriesTable />
 //       </MuiThemeProvider>
 //     </Provider>
 //   );

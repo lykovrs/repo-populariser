@@ -2,11 +2,12 @@ import { all, takeEvery, put, call } from "redux-saga/effects";
 import { appName } from "../config";
 import { Record, List } from "immutable";
 import { createSelector } from "reselect";
-import { mockRepoNodes } from "./mock";
+import { client } from "../ApolloClient";
+import gql from "graphql-tag";
 /**
  * Constants
  * */
-export const moduleName = "report";
+export const moduleName = "repositories";
 const prefix = `${appName}/${moduleName}`;
 
 export const CLEAR = `${prefix}/CLEAR`;
@@ -27,12 +28,13 @@ export const ItemRecord = Record({
   description: null,
   stargazers: null,
   forks: null,
-  updatedAt: null
+  updatedAt: null,
+  createdAt: null
 });
 
 export const ReducerRecord = Record({
   items: new List([]),
-  messages: [],
+  messages: new List([]),
   loading: false
 });
 
@@ -47,16 +49,18 @@ export default function reducer(state = new ReducerRecord(), action) {
       return state.set("items", new List([])).set("loading", true);
 
     case FETCH_ITEMS_ERROR:
-      return state
-        .set("loading", false)
-        .set("messages", [...state.get("messages"), action.payload.message]);
+      return state.set("loading", false).updateIn(["messages"], fav => {
+        return fav.push(action.payload.message);
+      });
 
     case FETCH_ITEMS_SUCCESS:
       const { items } = payload;
       return state
         .set("items", new List(items))
         .set("loading", false)
-        .set("messages", [...state.get("messages"), action.payload.message]);
+        .updateIn(["messages"], fav => {
+          return fav.push(action.payload.message);
+        });
 
     case CLEAR_MESSAGE:
       return state.set(
@@ -82,21 +86,20 @@ export const reportLoadingSelector = createSelector(
   state => state.loading
 );
 
-export const reportMessagesSelector = createSelector(
-  stateSelector,
-  state => state.messages
+export const reportMessagesSelector = createSelector(stateSelector, state =>
+  state.messages.toArray()
 );
 
 /**
  * Action Creators
  * */
-export function clearReport() {
+export function clearRepositories() {
   return {
     type: CLEAR
   };
 }
 
-export function fetchReport(id) {
+export function fetchRepositories(id) {
   return {
     type: FETCH_ITEMS_REQUEST,
     payload: {
@@ -105,22 +108,15 @@ export function fetchReport(id) {
   };
 }
 
-export function clearReportMessage(message) {
+export function clearRepositoriesMessage(message) {
   return {
     type: CLEAR_MESSAGE,
     payload: message
   };
 }
 
-/**
- * Делает запрос на сервер за данными отчета
- * @param id видео
- * @returns {}
- */
-export async function fetchGraphQLReport(id) {
-  const items = mockRepoNodes.data.search.edges;
-
-  const newItems = items.map(item => {
+function modifyData(arr) {
+  return arr.map(item => {
     const node = item.node;
 
     return new ItemRecord({
@@ -129,25 +125,54 @@ export async function fetchGraphQLReport(id) {
       description: node.description,
       stargazers: node.stargazers.totalCount,
       forks: node.forks.totalCount,
-      updatedAt: node.updatedAt
+      updatedAt: node.updatedAt,
+      createdAt: node.createdAt
     });
   });
+}
 
-  const promise = await new Promise(function(resolve, reject) {
-    setTimeout(() => {
-      resolve({ data: newItems });
-    }, 1000);
+/**
+ * Делает запрос на сервер за данными отчета
+ */
+export async function fetchGraphQLRepositories(last, from) {
+  const { data } = await client.query({
+    query: gql`
+      {
+        search(
+          query: "language:JavaScript created:>2018-03-01"
+          type: REPOSITORY
+          last: 10
+        ) {
+          repositoryCount
+          edges {
+            node {
+              ... on Repository {
+                id
+                name
+                description
+                stargazers {
+                  totalCount
+                }
+                forks {
+                  totalCount
+                }
+                updatedAt
+                createdAt
+              }
+            }
+          }
+        }
+      }
+    `
   });
 
-  console.log("items ====>", items);
-
-  return promise;
+  return modifyData(data.search.edges);
 }
 
 /**
  * Sagas
  * */
-export function* fetchReportSaga(action) {
+export function* fetchRepositoriesSaga(action) {
   const { id } = action.payload;
 
   yield put({
@@ -158,7 +183,7 @@ export function* fetchReportSaga(action) {
   });
 
   try {
-    const { data } = yield call(fetchGraphQLReport, id);
+    const data = yield call(fetchGraphQLRepositories, id);
     yield put({
       type: FETCH_ITEMS_SUCCESS,
       payload: { items: data, message: "Отчет успешно сформирован" }
@@ -172,5 +197,5 @@ export function* fetchReportSaga(action) {
 }
 
 export function* saga() {
-  yield all([takeEvery(FETCH_ITEMS_REQUEST, fetchReportSaga)]);
+  yield all([takeEvery(FETCH_ITEMS_REQUEST, fetchRepositoriesSaga)]);
 }

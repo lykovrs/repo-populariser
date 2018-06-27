@@ -8,12 +8,6 @@ import TableCell from "@material-ui/core/TableCell";
 
 // описание данных в колонках
 const columnData = [
-  {
-    id: "id",
-    numeric: false,
-    disablePadding: true,
-    label: "ID"
-  },
   { id: "name", numeric: false, disablePadding: false, label: "Имя" },
   {
     id: "description",
@@ -24,13 +18,14 @@ const columnData = [
 
   { id: "stargazers", numeric: true, disablePadding: false, label: "Звезды" },
   { id: "forks", numeric: true, disablePadding: false, label: "Форки" },
-  { id: "updatedAt", numeric: false, disablePadding: false, label: "Обновлен" }
+  { id: "updatedAt", numeric: false, disablePadding: false, label: "Обновлен" },
+  { id: "createdAt", numeric: false, disablePadding: false, label: "Создан" }
 ];
 
 /**
  * Шапка таблицы
  */
-class ReportTableHead extends Component {
+class RepositoriesTableHead extends Component {
   createSortHandler = property => event => {
     this.props.onRequestSort(event, property);
   };
@@ -78,10 +73,10 @@ class ReportTableHead extends Component {
   }
 }
 
-ReportTableHead.propTypes = {
+RepositoriesTableHead.propTypes = {
   order: PropTypes.string.isRequired,
   orderBy: PropTypes.string.isRequired,
   onRequestSort: PropTypes.func.isRequired
 };
 
-export default ReportTableHead;
+export default RepositoriesTableHead;

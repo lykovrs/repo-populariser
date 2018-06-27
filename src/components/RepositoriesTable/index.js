@@ -4,7 +4,7 @@ import { withStyles } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
-import ReportTableHead from "./ReportTableHead";
+import RepositoriesTableHead from "./head";
 import TablePagination from "@material-ui/core/TablePagination";
 import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
@@ -12,13 +12,12 @@ import Typography from "@material-ui/core/Typography";
 import Toolbar from "@material-ui/core/Toolbar";
 import { connect } from "react-redux";
 import {
-  clearReportMessage,
-  fetchReport,
+  clearRepositoriesMessage,
+  fetchRepositories,
   reportMessagesSelector,
-  reportFileIdSelector,
   reportItemsSelector,
   reportLoadingSelector
-} from "../../ducks/report";
+} from "../../ducks/repositories";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import SimpleSnackbarPortal from "../SimpleSnackbarPortal";
 
@@ -45,9 +44,9 @@ const styles = theme => ({
 });
 
 /**
- * Компонент ReportTable с таблицей отчета
+ * Компонент RepositoriesTable с таблицей отчета
  */
-class ReportTable extends Component {
+class RepositoriesTable extends Component {
   constructor(props, context) {
     super(props, context);
 
@@ -78,7 +77,7 @@ class ReportTable extends Component {
         </div>
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
-            <ReportTableHead
+            <RepositoriesTableHead
               order={order}
               orderBy={orderBy}
               onRequestSort={this.handleRequestSort}
@@ -95,14 +94,12 @@ class ReportTable extends Component {
                       tabIndex={-1}
                       key={n.id}
                     >
-                      <TableCell component="th" scope="row">
-                        {n.id}
-                      </TableCell>
                       <TableCell>{n.name}</TableCell>
                       <TableCell>{n.description}</TableCell>
                       <TableCell numeric>{n.stargazers}</TableCell>
                       <TableCell numeric>{n.forks}</TableCell>
                       <TableCell>{n.updatedAt}</TableCell>
+                      <TableCell>{n.createdAt}</TableCell>
                     </TableRow>
                   );
                 })}
@@ -147,7 +144,7 @@ class ReportTable extends Component {
    * Делаем запрос данных
    */
   componentDidMount() {
-    this.props.fetchReport(this.props.id);
+    this.props.fetchRepositories(this.props.id);
   }
 
   /**
@@ -204,18 +201,18 @@ class ReportTable extends Component {
    * @returns {Function}
    */
   clearMessage = message => () => {
-    this.props.clearReportMessage(message);
+    this.props.clearRepositoriesMessage(message);
   };
 }
 
-ReportTable.propTypes = {
+RepositoriesTable.propTypes = {
   classes: PropTypes.object.isRequired,
   //redux
   items: PropTypes.array.isRequired,
   loading: PropTypes.bool.isRequired,
   messages: PropTypes.array.isRequired,
-  clearReportMessage: PropTypes.func.isRequired,
-  fetchReport: PropTypes.func.isRequired
+  clearRepositoriesMessage: PropTypes.func.isRequired,
+  fetchRepositories: PropTypes.func.isRequired
 };
 
 export default connect(
@@ -225,7 +222,7 @@ export default connect(
     messages: reportMessagesSelector(state)
   }),
   {
-    clearReportMessage,
-    fetchReport
+    clearRepositoriesMessage,
+    fetchRepositories
   }
-)(withStyles(styles, { withTheme: true })(ReportTable));
+)(withStyles(styles, { withTheme: true })(RepositoriesTable));

@@ -5,14 +5,12 @@ import { withStyles } from "@material-ui/core/styles";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import LoginPage from "./router/LoginPage";
 import PrivateRoute from "./router/PrivateRoute";
-import AnalysisPage from "./router/AnalysisPage";
+import RepositoriesPage from "./router/RepositoriesPage";
 import WelcomePage from "./router/WelcomePage";
-import ReportPage from "./router/ReportPage";
 import {
   ROUTE_LOGIN,
-  ROUTE_ANALYSIS,
-  ROUTE_PROFILE,
-  ROUTE_REPORT
+  ROUTE_REPOSITORIES,
+  ROUTE_PROFILE
 } from "./router/_constants";
 import NoMatchPage from "./router/NoMatchPage";
 import ProfilePage from "./router/ProfilePage";
@@ -56,15 +54,15 @@ class App extends Component {
               <Route path="/" exact component={WelcomePage} />
               <Route path={ROUTE_LOGIN} exact component={LoginPage} />
               <PrivateRoute
-                path={ROUTE_ANALYSIS}
+                path={ROUTE_REPOSITORIES}
                 exact
-                component={AnalysisPage}
+                component={RepositoriesPage}
               />
-              <PrivateRoute
-                path={`${ROUTE_ANALYSIS}${ROUTE_REPORT}/:id`}
-                exact
-                component={({ match }) => <ReportPage id={match.params.id} />}
-              />
+              {/*<PrivateRoute*/}
+              {/*path={`${ROUTE_REPOSITORIES}${ROUTE_REPORT}/:id`}*/}
+              {/*exact*/}
+              {/*component={({ match }) => <RepositoriesPage id={match.params.id} />}*/}
+              {/*/>*/}
               <PrivateRoute
                 path={ROUTE_PROFILE}
                 exact

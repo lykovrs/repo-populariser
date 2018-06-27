@@ -4,7 +4,7 @@ import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 import { withStyles } from "@material-ui/core/styles/index";
-import { ROUTE_ANALYSIS } from "./_constants";
+import { ROUTE_REPOSITORIES } from "./_constants";
 import { Link } from "react-router-dom";
 
 const styles = theme => ({
@@ -27,7 +27,7 @@ function WelcomePage(props) {
         </Typography>
         <Typography component="p">
           Чтобы начать анализ перейдите по{" "}
-          <Link to={ROUTE_ANALYSIS}>ссылке</Link>
+          <Link to={ROUTE_REPOSITORIES}>ссылке</Link>
         </Typography>
       </Paper>
     </Grid>
