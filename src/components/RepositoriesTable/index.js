@@ -165,7 +165,7 @@ class RepositoriesTable extends Component {
     const monthAgo = dayjs()
       .add(-1, "month")
       .format("YYYY-MM-DD");
-
+    // Запрашиваем данные за последний месяц, последние 10
     this.props.fetchRepositories(monthAgo, 10);
   }
 
