@@ -21,6 +21,9 @@ import {
 import LinearProgress from "@material-ui/core/LinearProgress";
 import SimpleSnackbarPortal from "../SimpleSnackbarPortal";
 import dayjs from "dayjs";
+import Input from "@material-ui/core/Input";
+import InputLabel from "@material-ui/core/InputLabel";
+import FormControl from "@material-ui/core/FormControl";
 
 const styles = theme => ({
   root: {
@@ -40,6 +43,10 @@ const styles = theme => ({
   },
   rightIcon: {
     marginLeft: theme.spacing.unit
+  },
+  formControl: {
+    marginLeft: theme.spacing.unit,
+    minWidth: "200px"
   }
 });
 
@@ -55,7 +62,8 @@ class RepositoriesTable extends Component {
       orderBy: "stargazers",
       data: [],
       page: 0,
-      rowsPerPage: 5
+      rowsPerPage: 5,
+      filter: ""
     };
   }
 
@@ -70,6 +78,16 @@ class RepositoriesTable extends Component {
         <Toolbar>
           <Typography variant="title" gutterBottom>
             Отчет
+            <FormControl className={classes.formControl}>
+              <InputLabel htmlFor="name-filter">
+                Фильтровать по имени
+              </InputLabel>
+              <Input
+                onChange={this.filterByText}
+                value={this.state.filter}
+                id="name-filter"
+              />
+            </FormControl>
           </Typography>
         </Toolbar>
         <div className={classes.loader}>
@@ -206,6 +224,18 @@ class RepositoriesTable extends Component {
    */
   clearMessage = message => () => {
     this.props.clearRepositoriesMessage(message);
+  };
+
+  /**
+   * Фильтрация строк по содержанию подстроки в имени
+   * @param ev
+   */
+  filterByText = ev => {
+    const text = ev.target.value;
+    const filteredData = this.props.items.filter(
+      item => item.name.toLowerCase().indexOf(text.toLowerCase()) > -1
+    );
+    this.setState({ data: filteredData, filter: text });
   };
 }
 
