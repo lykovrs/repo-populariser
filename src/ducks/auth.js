@@ -15,7 +15,6 @@ export const SIGN_IN_SUCCESS = `${prefix}/SIGN_IN_SUCCESS`;
 export const SIGN_IN_FAILURE = `${prefix}/SIGN_IN_FAILURE`;
 
 export const SIGN_OUT_REQUEST = `${prefix}/SIGN_OUT_REQUEST`;
-export const SIGN_OUT_START = `${prefix}/SIGN_OUT_START`;
 export const SIGN_OUT_SUCCESS = `${prefix}/SIGN_OUT_SUCCESS`;
 export const SIGN_OUT_FAILURE = `${prefix}/SIGN_OUT_FAILURE`;
 
@@ -24,6 +23,7 @@ export const SIGN_OUT_FAILURE = `${prefix}/SIGN_OUT_FAILURE`;
  * */
 export const ReducerRecord = Record({
   isAuthenticated: false,
+  loading: false,
   user: new Map({ name: null, password: null })
 });
 
@@ -31,13 +31,17 @@ export default function reducer(state = new ReducerRecord(), action) {
   const { type } = action;
 
   switch (type) {
+    case SIGN_IN_START:
+      return state.set("loading", true);
+
     case SIGN_IN_SUCCESS:
       return state
         .set("isAuthenticated", true)
+        .set("loading", false)
         .set("user", new Map(action.payload));
 
     case SIGN_OUT_SUCCESS:
-      return state.set("isAuthenticated", false);
+      return new ReducerRecord();
     default:
       return state;
   }
@@ -79,7 +83,7 @@ export function logOut() {
 /**
  * Sagas
  * */
-export function* fetchLoInSaga(action) {
+export function* fetchLogInSaga(action) {
   const { name, password } = action.payload;
   yield put({
     type: SIGN_IN_START
@@ -101,10 +105,6 @@ export function* fetchLoInSaga(action) {
 }
 
 export function* fetchLogOutSaga(action) {
-  yield put({
-    type: SIGN_OUT_START
-  });
-
   try {
     yield put({
       type: SIGN_OUT_SUCCESS
@@ -117,6 +117,6 @@ export function* fetchLogOutSaga(action) {
 }
 
 export function* saga() {
-  yield all([takeEvery(SIGN_IN_REQUEST, fetchLoInSaga)]);
+  yield all([takeEvery(SIGN_IN_REQUEST, fetchLogInSaga)]);
   yield all([takeEvery(SIGN_OUT_REQUEST, fetchLogOutSaga)]);
 }

@@ -2,7 +2,12 @@ import React, { Component } from "react";
 import Header from "./components/Header/index";
 import Grid from "@material-ui/core/Grid";
 import { withStyles } from "@material-ui/core/styles";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Switch,
+  Redirect
+} from "react-router-dom";
 import LoginPage from "./router/LoginPage";
 import PrivateRoute from "./router/PrivateRoute";
 import RepositoriesPage from "./router/RepositoriesPage";
@@ -58,15 +63,16 @@ class App extends Component {
                 exact
                 component={RepositoriesPage}
               />
-              {/*<PrivateRoute*/}
-              {/*path={`${ROUTE_REPOSITORIES}${ROUTE_REPORT}/:id`}*/}
-              {/*exact*/}
-              {/*component={({ match }) => <RepositoriesPage id={match.params.id} />}*/}
-              {/*/>*/}
               <PrivateRoute
                 path={ROUTE_PROFILE}
                 exact
                 component={ProfilePage}
+              />
+              {/*Для Github Pages*/}
+              <Route
+                exact
+                path="/repo-populariser"
+                render={() => <Redirect to="/" />}
               />
               <Route component={NoMatchPage} />
             </Switch>
