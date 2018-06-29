@@ -17,7 +17,7 @@ import AccountCircle from "@material-ui/icons/AccountCircle";
 import IconButton from "@material-ui/core/IconButton";
 import Visibility from "@material-ui/icons/Visibility";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
-import Icon from "@material-ui/core/Icon";
+import SendIcon from "@material-ui/icons/Send";
 
 const styles = theme => ({
   root: {
@@ -124,7 +124,7 @@ class LoginPage extends Component {
               className={classes.button}
               onClick={this.login}
             >
-              <Icon className={classes.rightIcon}>send</Icon>
+              <SendIcon />
             </Button>
           </div>
         </Paper>
