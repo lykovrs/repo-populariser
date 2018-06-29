@@ -5,19 +5,25 @@ import reducer, {
   FETCH_ITEMS_START,
   FETCH_ITEMS_SUCCESS,
   FETCH_ITEMS_ERROR,
-  ReducerRecord
+  ReducerRecord,
+  fetchGraphQLRepositories,
+  QueryParamsRecord,
+  CLEAR_MESSAGE
 } from "./repositories";
-import { take, call, put, takeEvery } from "redux-saga/effects";
+import { List } from "immutable";
+import { call, put } from "redux-saga/effects";
 
 /**
  * Saga tests
  * */
 it("should fetch items", () => {
-  const id = Date.now();
+  const fromDate = "2018-03-03";
+  const amount = 10;
   const requestAction = {
     type: FETCH_ITEMS_REQUEST,
     payload: {
-      id
+      fromDate,
+      amount
     }
   };
 
@@ -27,19 +33,22 @@ it("should fetch items", () => {
     put({
       type: FETCH_ITEMS_START,
       payload: {
-        id
+        amount,
+        fromDate
       }
     })
   );
 
-  expect(saga.next(FETCH_ITEMS_START).value).toEqual(
-    call(fetchAxiosRepositories, id)
+  expect(saga.next().value).toEqual(
+    call(fetchGraphQLRepositories, fromDate, amount)
   );
 
-  expect(saga.next(FETCH_ITEMS_SUCCESS).value).toEqual(
+  const dataArr = [];
+
+  expect(saga.next(dataArr).value).toEqual(
     put({
       type: FETCH_ITEMS_SUCCESS,
-      payload: { items: undefined, message: "Отчет успешно сформирован" }
+      payload: { items: dataArr, message: "Отчет успешно сформирован" }
     })
   );
 
@@ -53,24 +62,77 @@ it("should fetch items", () => {
   );
 });
 
-it("should export to file", () => {});
-
 /**
  * Reducer Tests
  * */
+it("should start fetching items, start loading", () => {
+  const fromDate = "2018-03-03";
+  const amount = 10;
 
-it("should fetch report", () => {
   const state = new ReducerRecord();
-  const items = [];
-  const messages = [];
-  const message = `message`;
 
   const newState = reducer(state, {
-    type: FETCH_ITEMS_SUCCESS,
-    payload: { items, message }
+    type: FETCH_ITEMS_START,
+    payload: {
+      fromDate,
+      amount
+    }
   });
 
   expect(newState).toEqual(
-    new ReducerRecord({ items, messages: [...messages, message] })
+    new ReducerRecord()
+      .set("queryParams", new QueryParamsRecord({ fromDate, amount }))
+      .set("loading", true)
+  );
+});
+
+it("should set new items and message, stop loading", () => {
+  const state = new ReducerRecord().set("loading", true);
+  const items = new List();
+
+  const newState = reducer(state, {
+    type: FETCH_ITEMS_SUCCESS,
+    payload: { items, message: "new message" }
+  });
+
+  const newItems = new List();
+  const updatedMessages = new List(["new message"]);
+
+  expect(newState).toEqual(
+    new ReducerRecord()
+      .set("items", newItems)
+      .set("messages", updatedMessages)
+      .set("loading", false)
+  );
+});
+
+it("should set error message and stop loading", () => {
+  const state = new ReducerRecord().set("loading", true);
+
+  const newState = reducer(state, {
+    type: FETCH_ITEMS_ERROR,
+    payload: { message: "error message" }
+  });
+
+  const updatedMessages = new List(["error message"]);
+
+  expect(newState).toEqual(
+    new ReducerRecord().set("messages", updatedMessages).set("loading", false)
+  );
+});
+
+it("it remove message from list", () => {
+  const state = new ReducerRecord().set(
+    "messages",
+    new List(["hello", "message", "world"])
+  );
+
+  const newState = reducer(state, {
+    type: CLEAR_MESSAGE,
+    payload: "message"
+  });
+
+  expect(newState).toEqual(
+    new ReducerRecord().set("messages", new List(["hello", "world"]))
   );
 });

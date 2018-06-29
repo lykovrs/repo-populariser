@@ -12,8 +12,6 @@ import dayjs from "dayjs";
 export const moduleName = "repositories";
 const prefix = `${appName}/${moduleName}`;
 
-export const CLEAR = `${prefix}/CLEAR`;
-
 export const FETCH_ITEMS_REQUEST = `${prefix}/FETCH_ITEMS_REQUEST`;
 export const FETCH_ITEMS_START = `${prefix}/FETCH_ITEMS_START`;
 export const FETCH_ITEMS_SUCCESS = `${prefix}/FETCH_ITEMS_SUCCESS`;
@@ -24,6 +22,11 @@ export const CLEAR_MESSAGE = `${prefix}/CLEAR_MESSAGE`;
 /**
  * Reducer
  * */
+
+/**
+ * Модель данных репозитория
+ * @type {*|Immutable.Record.Class}
+ */
 export const ItemRecord = Record({
   id: null,
   name: null,
@@ -34,11 +37,19 @@ export const ItemRecord = Record({
   createdAt: null
 });
 
+/**
+ * Модель параметров для запроса
+ * @type {*|Immutable.Record.Class}
+ */
 export const QueryParamsRecord = Record({
   amount: null,
   fromDate: null
 });
 
+/**
+ * Общая модель модуля репозиториев
+ * @type {*|Immutable.Record.Class}
+ */
 export const ReducerRecord = Record({
   items: new List([]),
   messages: new List([]),
@@ -50,28 +61,28 @@ export default function reducer(state = new ReducerRecord(), action) {
   const { type, payload } = action;
 
   switch (type) {
-    case CLEAR:
-      return new ReducerRecord();
-
     case FETCH_ITEMS_START:
       return state
         .set("items", new List([]))
         .set("loading", true)
         .set("queryParams", new QueryParamsRecord(payload));
 
-    case FETCH_ITEMS_ERROR:
-      return state.set("loading", false).updateIn(["messages"], fav => {
-        return fav.push(action.payload.message);
-      });
-
     case FETCH_ITEMS_SUCCESS:
-      const { items } = payload;
+      const { items, message } = payload;
       return state
         .set("items", new List(items))
         .set("loading", false)
         .updateIn(["messages"], fav => {
-          return fav.push(action.payload.message);
+          return fav.push(message);
         });
+
+    case FETCH_ITEMS_ERROR:
+      return state
+        .set("loading", false)
+        .updateIn(["messages"], fav => {
+          return fav.push(action.payload.message);
+        })
+        .set("queryParams", new QueryParamsRecord(payload));
 
     case CLEAR_MESSAGE:
       return state.set(
@@ -108,12 +119,13 @@ export const queryParamsSelector = createSelector(stateSelector, state =>
 /**
  * Action Creators
  * */
-export function clearRepositories() {
-  return {
-    type: CLEAR
-  };
-}
 
+/**
+ * Инициирует запрос на сервер за данными репозиториев
+ * @param fromDate
+ * @param amount
+ * @returns {{type: string, payload: {fromDate: *, amount: *}}}
+ */
 export function fetchRepositories(fromDate, amount) {
   return {
     type: FETCH_ITEMS_REQUEST,
@@ -121,6 +133,11 @@ export function fetchRepositories(fromDate, amount) {
   };
 }
 
+/**
+ * Инициализирует удаление сообщения из хранилища
+ * @param message
+ * @returns {{type: string, payload: *}}
+ */
 export function clearRepositoriesMessage(message) {
   return {
     type: CLEAR_MESSAGE,
@@ -128,6 +145,11 @@ export function clearRepositoriesMessage(message) {
   };
 }
 
+/**
+ * Приводит структуру данных
+ * @param arr
+ * @returns {*}
+ */
 function modifyData(arr) {
   return arr.map(item => {
     const node = item.node;
